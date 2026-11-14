@@ -1,0 +1,6 @@
+# 签名密钥不进仓库（build_apk.sh 缺失时会自动生成）
+vpncommon/keystore.jks
+*.idsig
+# 构建中间产物
+build/
+.DS_Store
