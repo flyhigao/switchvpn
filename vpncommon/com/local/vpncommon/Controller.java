@@ -92,13 +92,42 @@ public final class Controller {
     private Controller() {
     }
 
-    /** 从 Intent 里取 mode；取不到就用调用方给的默认值。 */
+    /**
+     * 从 Intent 里取 mode，优先级：extra mode > URI（vpnswitch://start|stop|status）> action 名
+     * （...action.START / .STOP / .TOGGLE / .STATUS）> 调用方给的默认值。
+     */
     public static String resolveMode(Intent intent, String defaultMode) {
-        if (intent != null) {
-            String m = intent.getStringExtra("mode");
-            if (m != null && m.length() > 0) return m;
+        if (intent == null) return defaultMode;
+        String m = intent.getStringExtra("mode");
+        if (m != null && m.length() > 0) return normalizeMode(m);
+        if (intent.getData() != null) {
+            String d = intent.getData().getHost();
+            if (d == null || d.length() == 0) {
+                String path = intent.getData().getPath();
+                d = path != null ? path.replace("/", "") : null;
+            }
+            if (d != null && d.length() > 0) {
+                String n = normalizeMode(d);
+                if (n != null) return n;
+            }
+        }
+        String a = intent.getAction();
+        if (a != null) {
+            if (a.endsWith(".STOP") || a.endsWith(".OFF")) return MODE_STOP;
+            if (a.endsWith(".START") || a.endsWith(".ON")) return MODE_START;
+            if (a.endsWith(".TOGGLE")) return MODE_TOGGLE;
+            if (a.endsWith(".STATUS")) return MODE_STATUS;
         }
         return defaultMode;
+    }
+
+    private static String normalizeMode(String raw) {
+        String v = raw.trim().toLowerCase();
+        if (v.equals("start") || v.equals("on") || v.equals("open") || v.equals("1")) return MODE_START;
+        if (v.equals("stop") || v.equals("off") || v.equals("close") || v.equals("0")) return MODE_STOP;
+        if (v.equals("toggle")) return MODE_TOGGLE;
+        if (v.equals("status")) return MODE_STATUS;
+        return MODE_TOGGLE;
     }
 
     /** 网络稳定等待秒数：intent extra "settle" 优先，否则用默认值。 */

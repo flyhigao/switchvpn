@@ -11,7 +11,7 @@
 
 两个 App 被拉起后**不会立刻动代理**，而是：
 
-1. 记下当时的「WiFi 指纹」（如 `WIFI|192.168.2.1`）和动作，排一个 10 秒后的 Job，界面立刻退出；
+1. 记下当时的「WiFi 指纹」（如 `WIFI|192.168.2.1`）和动作，排一个 10 秒后的 Job，自己立刻退出（**全程不显示任何界面、不弹 Toast**，见下一节）；
 2. 10 秒到点再比对指纹：期间 WiFi 变了（离开又连上、连上又断）→ **放弃本次，不动作**；
 3. 期间又来了新的触发（App 被再次拉起）→ 老的那次自动作废，按最新一次重新计时（nonce 判定）。
 
@@ -24,6 +24,18 @@
 | 10 秒内被再次触发 | ✅ 老的 waiter `stale waiter ... ignore`，按新的重新计时 |
 
 ⚠️ 前提：必须给这两个 App 开「允许完全后台运行」（设置 → 电池 → 应用耗电管理），否则 ColorOS 会把刚退到后台的进程丢进 freezer 冻结（实测 `cgroup.freeze=1`，连前台服务都挡不住）、把闹钟推迟到 +2 天，10 秒等待会被打断。
+
+## 零屏幕干扰
+
+主界面用的是 `@android:style/Theme.NoDisplay`：`onCreate` 里登记完动作就 `finish()`，**不创建任何窗口**，也没有 Toast（结果只写 logcat，tag `VpnSwitch`）。所以从自动化里拉起时屏幕不会闪、不会抢触控焦点。
+
+```bash
+adb logcat -s VpnSwitch     # 看执行记录（用户看不到，只有调试时用）
+```
+
+## 为什么不是“一个 App + 参数”
+
+试过单包方案（extra `mode=start|stop`、`vpnswitch://start`、action `...ON/OFF`），但 **OPPO 的「自动指令」只会按包名调 `getLaunchIntentForPackage()` 拉起应用**（反编译 `com.coloros.shortcuts` 可见该调用），无法携带 extra / data，也就不可能区分开与关。因此保留两个包，各自对应一个图标，自动化里分别指向它们即可。
 
 单次调用可以覆盖等待时间：`am start -n com.local.activatevpn/.MainActivity --ei settle 0`（0 = 立即执行）。
 
