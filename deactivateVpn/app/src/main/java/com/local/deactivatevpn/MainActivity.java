@@ -11,7 +11,7 @@ import com.local.vpncommon.Controller;
  * 打开本应用 = 确保 v2rayNG 的代理关闭。
  *
  * 完全不显示任何界面（Theme.NoDisplay），也不弹 Toast：
- * 只登记 10 秒后的动作，然后立刻结束自己，屏幕上不会有任何痕迹。
+ * 只登记 5 秒后的动作，然后立刻结束自己，屏幕上不会有任何痕迹。
  */
 public class MainActivity extends Activity {
     private static final String DEFAULT_MODE = Controller.MODE_STOP;

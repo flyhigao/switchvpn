@@ -5,7 +5,7 @@ import android.app.job.JobService;
 import android.util.Log;
 
 /**
- * 10 秒防抖用的 Job：系统会在到点时临时唤醒/解冻本进程执行它。
+ * 防抖（settle）用的 Job：系统会在到点时临时唤醒/解冻本进程执行它。
  * 这样不需要进程一直活着，也不受 ColorOS 闹钟推迟（+2 天）的影响。
  */
 public class SettleJobService extends JobService {

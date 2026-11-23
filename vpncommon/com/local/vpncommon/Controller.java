@@ -70,7 +70,7 @@ public final class Controller {
     private static final int FALLBACK_UI_DELAY_MS = 1500;
 
     /** 网络稳定等待时间（秒）。想改默认值就改这里重新构建。 */
-    private static final int DEFAULT_SETTLE_SECONDS = 10;
+    private static final int DEFAULT_SETTLE_SECONDS = 5;
     private static final String EXTRA_SETTLE = "settle";
     private static final String PREFS = "vpnswitch";
     private static final String KEY_SEQ = "seq";
@@ -196,7 +196,7 @@ public final class Controller {
     }
 
     /**
-     * 延迟执行入口：settleSeconds>0 时登记一个 10 秒后的 Job，立刻返回；
+     * 延迟执行入口：settleSeconds>0 时登记一个 settleSeconds 秒后的 Job，立刻返回；
      * Job 到点时（系统会临时唤醒/解冻本进程）再比对网络指纹，没变才真正执行。
      * settleSeconds<=0 或 status 模式则立即执行。
      */
@@ -335,7 +335,7 @@ public final class Controller {
             cb.onResult(true, "⏸ 网络又变了，本次不执行");
             return;
         }
-        // 10 秒已经在系统调度器里等过了，这里直接干活（趁进程被唤醒的这一小段活着）
+        // 等待已经在系统调度器里过完了，这里直接干活（趁进程被唤醒的这一小段活着）
         run(ctx, mode, 0, cb);
       }
     }
